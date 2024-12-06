@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -39,6 +40,7 @@ func main() {
 	rules := true
 
 	res1 := 0
+	res2 := 0
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -68,6 +70,7 @@ func main() {
 			}
 
 			res1 += u.part1(nn)
+			res2 += u.part2(nn)
 		}
 	}
 
@@ -76,12 +79,32 @@ func main() {
 	}
 
 	fmt.Println(res1)
+	fmt.Println(res2)
 }
 
-func (u *Updates) part1(nn []int) int {
+func (u *Updates) part2(nn []int) int {
 	l := len(nn)
 
-	middle := nn[l/2]
+	if !u.isCorrect(nn) {
+		sort.Slice(nn, func(i, j int) bool {
+			// false if there is a rule for i that it must be after j <=> there is a rule fo j to be before i
+			for _, r := range u.Rules[nn[j]] {
+				if r.After == nn[i] {
+					return false
+				}
+			}
+
+			return true
+		})
+
+		return nn[l/2]
+	}
+
+	return 0
+}
+
+func (u *Updates) isCorrect(nn []int) bool {
+	l := len(nn)
 
 	for i := 0; i < l-1; i++ {
 		n := nn[i]
@@ -93,7 +116,7 @@ func (u *Updates) part1(nn []int) int {
 			cached, ok := u.Cache[key]
 			if ok {
 				if !cached {
-					return 0
+					return false
 				}
 			} else {
 				rules := u.Rules[m]
@@ -101,7 +124,7 @@ func (u *Updates) part1(nn []int) int {
 				for _, r := range rules {
 					if r.After == n {
 						u.Cache[key] = false
-						return 0
+						return false
 					}
 				}
 
@@ -110,5 +133,15 @@ func (u *Updates) part1(nn []int) int {
 		}
 	}
 
-	return middle
+	return true
+}
+
+func (u *Updates) part1(nn []int) int {
+	l := len(nn)
+
+	if u.isCorrect(nn) {
+		return nn[l/2]
+	}
+
+	return 0
 }
