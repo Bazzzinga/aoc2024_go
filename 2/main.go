@@ -21,8 +21,8 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 
-	//reports := make([][]int, 0)
 	res1 := 0
+	res2 := 0
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -35,11 +35,13 @@ func main() {
 			levels[i] = l
 		}
 
-		isSafe := part1(levels)
-		if isSafe {
+		if part1(levels) {
 			res1++
 		}
-		//reports = append(reports, levels)
+
+		if part2(levels) {
+			res2++
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -47,6 +49,25 @@ func main() {
 	}
 
 	fmt.Println(res1)
+	fmt.Println(res2)
+}
+
+func part2(level []int) bool {
+	l := len(level)
+	for i := 0; i < l; i++ {
+		tmp := make([]int, l)
+		copy(tmp, level)
+
+		sub := append(tmp[:i], tmp[i+1:]...)
+
+		safe := part1(sub)
+		if safe {
+			return true
+		}
+
+	}
+
+	return false
 }
 
 func part1(level []int) bool {
