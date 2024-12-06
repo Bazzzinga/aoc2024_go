@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 )
 
 const inputFileName = "input"
@@ -23,8 +25,6 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 
-	res1 := 0
-
 	f := Field{
 		Cells: make([][]rune, 0),
 	}
@@ -35,16 +35,68 @@ func main() {
 		f.Cells = append(f.Cells, []rune(line))
 	}
 
-	res1 = f.part1()
+	//res1 := f.part1()
+	res2 := f.part2()
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(res1)
+	//fmt.Println(res1)
+	fmt.Println(res2)
+}
+
+func (f Field) part2() int {
+	//цикл = повторный проход по одной клетке в том же направлении
+	x, y, _ := f.start()
+	basePath := f.mapPath()
+	delete(basePath, fmt.Sprintf("%d_%d", x, y))
+
+	res := 0
+
+	for c := range basePath {
+		parts := strings.Split(c, "_")
+		x, _ := strconv.Atoi(parts[0])
+		y, _ := strconv.Atoi(parts[1])
+
+		if f.hasLoop(x, y) {
+			res++
+		}
+	}
+
+	return res
+}
+
+func (f Field) hasLoop(ox, oy int) bool {
+	pathDirMap := make(map[string]struct{})
+
+	x, y, dir := f.start()
+
+	for {
+		key := fmt.Sprintf("%d_%d_%s", x, y, string(dir))
+
+		_, ok := pathDirMap[key]
+		if ok {
+			return true
+		}
+
+		pathDirMap[key] = struct{}{}
+
+		if x < 0 || y < 0 || x >= len(f.Cells[0]) || y >= len(f.Cells) {
+			return false
+		}
+
+		f.Cells[oy][ox] = '#'
+		x, y, dir = f.checkDir(x, y, dir)
+		f.Cells[oy][ox] = '.'
+	}
 }
 
 func (f Field) part1() int {
+	return len(f.mapPath())
+}
+
+func (f Field) mapPath() map[string]struct{} {
 	x, y, dir := f.start()
 
 	checkedMap := make(map[string]struct{})
@@ -59,7 +111,7 @@ func (f Field) part1() int {
 		x, y, dir = f.checkDir(x, y, dir)
 	}
 
-	return len(checkedMap)
+	return checkedMap
 }
 
 func (f Field) checkDir(x, y int, dir rune) (int, int, rune) {
@@ -123,7 +175,6 @@ func (f Field) start() (int, int, rune) {
 		for x := 0; x < len(f.Cells[y]); x++ {
 			r := f.Cells[y][x]
 			if r == '^' || r == 'v' || r == '<' || r == '>' {
-				f.Cells[y][x] = '.'
 				return x, y, r
 			}
 		}
