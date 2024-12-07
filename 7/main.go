@@ -27,6 +27,7 @@ func main() {
 	scanner := bufio.NewScanner(file)
 
 	res1 := 0
+	res2 := 0
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -47,8 +48,11 @@ func main() {
 			t.Numbers[i] = n
 		}
 
-		if t.isPossible() {
+		if t.isPossible1() {
 			res1 += t.Result
+		}
+		if t.isPossible2() {
+			res2 += t.Result
 		}
 	}
 
@@ -57,19 +61,48 @@ func main() {
 	}
 
 	fmt.Println(res1)
+	fmt.Println(res2)
 }
 
-func (t Test) isPossible() bool {
-	return t.recursion(t.Numbers[0], t.Numbers[1:])
+func (t Test) isPossible1() bool {
+	return t.recursion1(t.Numbers[0], t.Numbers[1:])
 }
 
-func (t Test) recursion(r int, nn []int) bool {
+func (t Test) isPossible2() bool {
+	return t.recursion2(t.Numbers[0], t.Numbers[1:])
+}
+
+func (t Test) recursion1(r int, nn []int) bool {
 	if len(nn) == 0 {
 		return r == t.Result
 	}
 
-	ok1 := t.recursion(r+nn[0], nn[1:])
-	ok2 := t.recursion(r*nn[0], nn[1:])
+	ok1 := t.recursion1(r+nn[0], nn[1:])
+	ok2 := t.recursion1(r*nn[0], nn[1:])
 
 	return ok1 || ok2
+}
+
+func (t Test) recursion2(r int, nn []int) bool {
+	if len(nn) == 0 {
+		return r == t.Result
+	}
+
+	ok1 := t.recursion2(r+nn[0], nn[1:])
+	ok2 := t.recursion2(r*nn[0], nn[1:])
+
+	ok3 := t.recursion2(t.concat(r, nn[0]), nn[1:])
+
+	return ok1 || ok2 || ok3
+}
+
+func (t Test) concat(a, b int) int {
+	tmp := strconv.Itoa(b)
+	l := len(tmp)
+
+	for i := 0; i < l; i++ {
+		a *= 10
+	}
+
+	return a + b
 }
