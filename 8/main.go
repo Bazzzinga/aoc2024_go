@@ -47,8 +47,10 @@ func main() {
 	}
 
 	res1 := c.part1()
+	res2 := c.part2()
 
 	fmt.Println(res1)
+	fmt.Println(res2)
 }
 
 func (c *City) parseLine(line string) {
@@ -71,21 +73,74 @@ func (c *City) parseLine(line string) {
 	}
 }
 
+func (c *City) part2() int {
+	nodes := make(map[string]struct{})
+
+	for _, as := range c.antennas {
+		l := len(as)
+		if l > 1 {
+			for i, a1 := range as {
+				tmp := make([]Coord, l)
+				copy(tmp, as)
+				tmp[i] = tmp[l-1]
+				tmp = tmp[:l-1]
+
+				nodes[fmt.Sprintf("%d_%d", a1.x, a1.y)] = struct{}{}
+
+				for _, a2 := range tmp {
+					ns := c.nodes(a1, a2)
+
+					for _, n := range ns {
+						nodes[fmt.Sprintf("%d_%d", n.x, n.y)] = struct{}{}
+					}
+				}
+			}
+		}
+	}
+
+	return len(nodes)
+}
+
+func (c *City) nodes(a1, a2 Coord) []Coord {
+	dx := a1.x - a2.x
+	dy := a1.y - a2.y
+
+	res := make([]Coord, 0)
+
+	nx := a1.x
+	ny := a1.y
+
+	for {
+		nx += dx
+		ny += dy
+
+		if nx >= 0 && ny >= 0 && nx <= c.maxX && ny <= c.maxY {
+			res = append(res, Coord{x: nx, y: ny})
+		} else {
+			break
+		}
+	}
+
+	return res
+}
+
 func (c *City) part1() int {
 	nodes := make(map[string]struct{})
 
 	for _, as := range c.antennas {
 		l := len(as)
-		for i, a1 := range as {
-			tmp := make([]Coord, l)
-			copy(tmp, as)
-			tmp[i] = tmp[l-1]
-			tmp = tmp[:l-1]
+		if l > 1 {
+			for i, a1 := range as {
+				tmp := make([]Coord, l)
+				copy(tmp, as)
+				tmp[i] = tmp[l-1]
+				tmp = tmp[:l-1]
 
-			for _, a2 := range tmp {
-				n := c.node(a1, a2)
-				if n.x >= 0 && n.y >= 0 && n.x <= c.maxX && n.y <= c.maxY {
-					nodes[fmt.Sprintf("%d_%d", n.x, n.y)] = struct{}{}
+				for _, a2 := range tmp {
+					n := c.node(a1, a2)
+					if n.x >= 0 && n.y >= 0 && n.x <= c.maxX && n.y <= c.maxY {
+						nodes[fmt.Sprintf("%d_%d", n.x, n.y)] = struct{}{}
+					}
 				}
 			}
 		}
