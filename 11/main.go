@@ -26,11 +26,13 @@ func main() {
 	cache = make(map[string]int)
 
 	res1 := 0
+	res2 := 0
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		res1 += part1(line)
+		res1 += solve(line, 25)
+		res2 += solve(line, 75)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -38,25 +40,24 @@ func main() {
 	}
 
 	fmt.Println(res1)
+	fmt.Println(res2)
 }
 
-func part1(line string) int {
+func solve(line string, blinks int) int {
 	res := 0
 
 	ss := strings.Split(line, " ")
 
-	blinks := 25
-
 	for _, s := range ss {
 		stone, _ := strconv.Atoi(s)
 
-		res += calcStone1(int64(stone), blinks)
+		res += calcStone(int64(stone), blinks)
 	}
 
 	return res
 }
 
-func calcStone1(n int64, blinks int) int {
+func calcStone(n int64, blinks int) int {
 	if blinks == 0 {
 		return 1
 	}
@@ -68,15 +69,15 @@ func calcStone1(n int64, blinks int) int {
 	}
 
 	if n == 0 {
-		res = calcStone1(1, blinks-1)
+		res = calcStone(1, blinks-1)
 
 	} else {
 		if numberLength(n)%2 == 0 {
 			n1, n2 := splitNumber(n)
 
-			res = calcStone1(n1, blinks-1) + calcStone1(n2, blinks-1)
+			res = calcStone(n1, blinks-1) + calcStone(n2, blinks-1)
 		} else {
-			res = calcStone1(n*2024, blinks-1)
+			res = calcStone(n*2024, blinks-1)
 		}
 	}
 
